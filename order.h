@@ -1,8 +1,24 @@
-//
-// Created by user on 10/16/19.
-//
 
-#ifndef RESTAURANT_ORDER_H
-#define RESTAURANT_ORDER_H
+#include <iostream>
+#include <string>
+#include <vector>
+#include <tuple>
 
-#endif //RESTAURANT_ORDER_H
+#include "customer.h"
+
+class Order {
+
+    char order_type;
+    std::string orderNumber;
+    std::vector<std::tuple<int, std::string, int>> order_items;
+    Customer this_customer;
+
+public:
+
+    // Constructor
+    Order(char new_order_type, std::string new_orderNumber, Customer this_customer);
+
+    bool add_items(Order&, std::vector<std::tuple<int, std::string, int>>);
+    void remove_item();
+    void print_order(Customer);
+};

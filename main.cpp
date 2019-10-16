@@ -1,9 +1,9 @@
 #include <iostream>
 #include <tuple>
 
+#include "customer.h"
+#include "order.h"
 #include "fns.h"
-
-
 
 int main() {
     // create the menu, this should be put in its own file
