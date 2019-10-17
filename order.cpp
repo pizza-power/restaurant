@@ -55,10 +55,6 @@ void Order::remove_item() {
     int pressed_key;
     std::cin >> pressed_key;
 
-    // write routing to find this item in the order, count how many times it occurs and ask to remove how many
-    // error check to non real item numbers etc
-
-
 }
 
 // print the order

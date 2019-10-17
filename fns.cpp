@@ -11,7 +11,6 @@ void quit_order() {
     std::cout << "Thank you! Have a nice Day!\n\n\n\n" << std::endl;
 }
 
-
 //intro routine, commences order
 
 char intro_routine() {

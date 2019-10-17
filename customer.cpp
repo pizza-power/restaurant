@@ -19,17 +19,13 @@ void Customer::print_customer(const Customer& this_customer) {
 
 }
 
-
-// interactive function to build a customer
+// build the customer object
 Customer customer_creator() {
 
     /** the menu and the menu printing needs to be moved elsewhere
      * the menu can go it it's own file, and then another function
      * can be used to print the menu
      */
-
-
-    char pressed_key;
 
     std::string first_name;
     std::string last_name;
@@ -59,20 +55,6 @@ Customer customer_creator() {
     // create a customer object
     Customer thiscustomer(first_name, last_name, street_address, city, state);
 
-//    // See the menu
-//    std::cout << "Welcome " << first_name << "! ";
-//    std::cout << "Press 'M' for the menu, or 'X' to Order: ";
-//
-//    std::cin >> pressed_key;
-//
-//    if (pressed_key == 'M') {
-//        std::cout << "\n\nPrinting menu... \n" << std::endl; // move this to the function
-//        menu.print_menu(menu.menu_items);
-//        std::cout << "change this so menu is printed, may need to pass menu to function?" << std::endl;
-//    } else if (pressed_key == 'X') {
-//        quit_order();
-//        return thiscustomer;
-//    }
     return thiscustomer;
 
 }

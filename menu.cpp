@@ -13,4 +13,3 @@ void Menu::print_menu(const std::vector<std::tuple<int, std::string, int>>& m) {
     }
     std::cout << "\n\n" << std::endl;
 }
-
