@@ -19,8 +19,7 @@ void Customer::print_customer(const Customer& this_customer) {
 
 }
 
-
-// interactive function to build a customer
+// build the customer object
 Customer customer_creator() {
 
     /** the menu and the menu printing needs to be moved elsewhere
@@ -28,20 +27,11 @@ Customer customer_creator() {
      * can be used to print the menu
      */
 
-
-    char pressed_key;
-
     std::string first_name;
     std::string last_name;
     std::string street_address;
     std::string city;
     std::string state;
-
-    // make the menu, move this to it's own file
-    std::vector<std::tuple<int, std::string, int>> menu;
-    menu.push_back(std::make_tuple(1, "pizza", 999));
-    menu.push_back(std::make_tuple(2, "hotdog", 299));
-    menu.push_back(std::make_tuple(3, "drink", 199));
 
     std::cout << "\nPlease enter your first and last name.\n" << std::endl;
     std::cout << "First Name: ";
@@ -65,19 +55,6 @@ Customer customer_creator() {
     // create a customer object
     Customer thiscustomer(first_name, last_name, street_address, city, state);
 
-    // See the menu
-    std::cout << "Welcome " << first_name << "! ";
-    std::cout << "Press 'M' for the menu, or 'X' to quit: ";
-
-    std::cin >> pressed_key;
-
-    if (pressed_key == 'M') {
-        std::cout << "\n\nPrinting menu... \n" << std::endl; // move this to the function
-        print_menu(menu);
-    } else if (pressed_key == 'X') {
-        quit_order();
-        return thiscustomer;
-    }
     return thiscustomer;
 
 }

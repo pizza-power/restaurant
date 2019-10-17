@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "customer.h"
+#include "menu.h"
 
 class Order {
 
@@ -12,11 +13,12 @@ class Order {
     std::string orderNumber;
     std::vector<std::tuple<int, std::string, int>> order_items;
     Customer this_customer;
+    Menu this_menu;
 
 public:
 
     // Constructor
-    Order(char new_order_type, std::string new_orderNumber, Customer this_customer);
+    Order(char new_order_type, std::string new_orderNumber, Customer this_customer, Menu this_menu);
 
     bool add_items(Order&, std::vector<std::tuple<int, std::string, int>>);
     void remove_item();

@@ -1,13 +1,23 @@
-//
-// Created by user on 10/16/19.
-//
-
-#ifndef RESTAURANT_MENU_H
-#define RESTAURANT_MENU_H
-
-#endif //RESTAURANT_MENU_H
+#ifndef MENU_H
+#define MENU_H
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <tuple>
+
+class Menu {
+
+public:
+
+    Menu();
+
+    std::vector<std::tuple<int, std::string, int>> menu_items;
+
+    void print_menu(const std::vector<std::tuple<int, std::string, int>>& );
+
+    std::vector<std::tuple<int, std::string, int>> add_item(std::tuple<int, std::string, int>);
+
+};
+
+#endif //MENU_H
