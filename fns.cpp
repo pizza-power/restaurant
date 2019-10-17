@@ -6,19 +6,29 @@
 
 #include "fns.h"
 
-//print the menu
-void print_menu(const std::vector<std::tuple<int, std::string, int>>& m) {
-    for (auto i : m) {
-        std::cout << std::get<0>(i) << " " <<  std::get<1>(i) << " " << std::get<2>(i) << std::endl;
-    }
-    std::cout << "\n\n" << std::endl;
-}
-
 // quit order function
 void quit_order() {
     std::cout << "Thank you! Have a nice Day!\n\n\n\n" << std::endl;
 }
 
 
+//intro routine, commences order
 
+char intro_routine() {
+    std::cout << "\n\nWelcome to Matt's Pizza Palace!\n\nPress 'Y' or order or 'X' to cancel: ";
+    char order_verify;
+    std::cin >> order_verify;
+
+    if (order_verify == 'Y') {
+        std::cout << "\nWill this be for Carryout 'C' or Delivery 'D'? ";
+        char order_type;
+        std::cin >> order_type;
+
+        return order_type;
+
+    } else {
+        quit_order();
+        return 'X';
+    }
+}
 

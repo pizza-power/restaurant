@@ -37,12 +37,6 @@ Customer customer_creator() {
     std::string city;
     std::string state;
 
-    // make the menu, move this to it's own file
-    std::vector<std::tuple<int, std::string, int>> menu;
-    menu.push_back(std::make_tuple(1, "pizza", 999));
-    menu.push_back(std::make_tuple(2, "hotdog", 299));
-    menu.push_back(std::make_tuple(3, "drink", 199));
-
     std::cout << "\nPlease enter your first and last name.\n" << std::endl;
     std::cout << "First Name: ";
     std::cin >> first_name;
@@ -65,19 +59,20 @@ Customer customer_creator() {
     // create a customer object
     Customer thiscustomer(first_name, last_name, street_address, city, state);
 
-    // See the menu
-    std::cout << "Welcome " << first_name << "! ";
-    std::cout << "Press 'M' for the menu, or 'X' to quit: ";
-
-    std::cin >> pressed_key;
-
-    if (pressed_key == 'M') {
-        std::cout << "\n\nPrinting menu... \n" << std::endl; // move this to the function
-        print_menu(menu);
-    } else if (pressed_key == 'X') {
-        quit_order();
-        return thiscustomer;
-    }
+//    // See the menu
+//    std::cout << "Welcome " << first_name << "! ";
+//    std::cout << "Press 'M' for the menu, or 'X' to Order: ";
+//
+//    std::cin >> pressed_key;
+//
+//    if (pressed_key == 'M') {
+//        std::cout << "\n\nPrinting menu... \n" << std::endl; // move this to the function
+//        menu.print_menu(menu.menu_items);
+//        std::cout << "change this so menu is printed, may need to pass menu to function?" << std::endl;
+//    } else if (pressed_key == 'X') {
+//        quit_order();
+//        return thiscustomer;
+//    }
     return thiscustomer;
 
 }
