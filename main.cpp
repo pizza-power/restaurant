@@ -11,6 +11,10 @@ int main() {
     char order_type;
     order_type = intro_routine();
 
+    if (order_type == 'X') {
+        quit_order();
+        return 0;
+    }
     // create new menu, use print menu
     Menu new_menu;
 
