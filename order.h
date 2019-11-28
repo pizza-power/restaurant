@@ -21,6 +21,6 @@ public:
     Order(char new_order_type, std::string new_orderNumber, Customer this_customer, Menu this_menu);
 
     bool add_items(Order&, std::vector<std::tuple<int, std::string, int>>);
-    void remove_item();
+    //void remove_item(Order&, int&, std::vector<std::tuple<int, std::string, int>>);
     void print_order(Customer);
 };

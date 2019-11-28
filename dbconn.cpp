@@ -2,6 +2,7 @@
 #define DBCONN_H
 
 #include <iostream>
+#include <vector>
 
 #include "mysqlx/xdevapi.h"
 
@@ -12,9 +13,6 @@
 
 
 
-//#include <iostream>
-//#include <vector>
-//#include "mysqlx/xdevapi.h"
 //#include "include/mysqlx/devapi/result.h"
 //
 //int main() {

@@ -5,22 +5,26 @@
 #include "order.h"
 #include "fns.h"
 #include "menu.h"
+#include "mysqlx/xdevapi.h"
 
 int main() {
-
     char order_type;
     order_type = intro_routine();
 
-    if (order_type == 'X') {
+    // no error checking for inputs other than x or y
+    // no error checking for non char inputs
+
+    if (order_type == 'X' || (order_type == 'x')) {
         quit_order();
         return 0;
     }
+
     // create new menu, use print menu
     Menu new_menu;
 
     // add items to the menu, this will be done on initial program boot by querying db
     new_menu.menu_items.emplace_back(std::make_tuple(1, "pizza", 999));
-    new_menu.menu_items.emplace_back(std::make_tuple(2, "htodog", 299));
+    new_menu.menu_items.emplace_back(std::make_tuple(2, "hotdog", 299));
     new_menu.menu_items.emplace_back(std::make_tuple(3, "soda", 199));
 
     // create a customer
