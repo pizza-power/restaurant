@@ -10,15 +10,12 @@
 #include "fns.h"
 #include "menu.h"
 
-
-
 // Order Constructor
 
 Order::Order(char new_order_type, std::string new_orderNumber, Customer new_this_customer, Menu new_this_menu)
         :order_type(new_order_type), orderNumber(new_orderNumber), this_customer(new_this_customer), this_menu(new_this_menu) {}
 
-//bool Order::add_items(Order& this_order, std::vector<std::tuple<int, std::string, int>> menu) {
-bool Order::add_items(Order& this_order, std::vector<std::tuple<int, std::string, int>> menu) {
+bool Order::add_items(Order& this_order, std::vector<std::tuple<int, std::string, double>> menu) {
 
     /** probably need to add an option to add to an already eixisting order
     // could pass the existing order in as a reference, and then edit it
@@ -27,7 +24,10 @@ bool Order::add_items(Order& this_order, std::vector<std::tuple<int, std::string
     // maybe add code to main so this function becomes void
     **/
 
-    if (order_type == 'X') {
+    // more robust input checking is needed, then put all code below under if y, ternary expression?
+    // if y or Y this or quit?
+
+    if (order_type == 'X' || (order_type == 'x')) {
         quit_order();
         return false;
     }
@@ -40,7 +40,7 @@ bool Order::add_items(Order& this_order, std::vector<std::tuple<int, std::string
     std::cout << std::endl;
 
     if (pressed_key == 1) {
-        this_menu.print_menu(this_menu.menu_items);
+        this_menu.print_menu();
         std::cout << "Enter the number of item you would like to order, or press 0 to exit: ";
         int item_number;
         std::cin >> item_number;

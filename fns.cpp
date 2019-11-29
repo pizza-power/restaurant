@@ -30,8 +30,8 @@ char intro_routine() {
 
         return order_type;
 
-    } else if ( order_verify == 'X') {
-        return 'X';
+    } else if ( order_verify == 'X' || (order_verify == 'x')) {
+        return 'x';
     } else {
         intro_routine();
 
