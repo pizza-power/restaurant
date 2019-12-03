@@ -10,16 +10,24 @@
 class Order {
 
     char order_type;
-    std::string orderNumber;
+    // std::string orderNumber;
     std::vector<std::tuple<int, std::string, double>> order_items;
-    Customer this_customer;
-    Menu this_menu;
+    Customer customer;
+    Menu menu;
+    double total_cost;
+    mysqlx::Schema database;
 
 public:
 
     // Constructor
-    Order(char new_order_type, std::string new_orderNumber, Customer this_customer, Menu this_menu);
+    // order number removed in order to use db
+    Order(char new_order_type, Customer this_customer, Menu this_menu, mysqlx::Schema database);
 
-    bool add_items(Order&, std::vector<std::tuple<int, std::string, double>>);
-    void print_order(Customer);
+    bool create_order(std::vector<std::tuple<int, std::string, double>>);
+    void print_order(Customer&);
+    void cancel_order();
+    void modify_order();
+    void submit_order();
+
 };
+

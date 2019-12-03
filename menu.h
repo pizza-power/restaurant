@@ -16,11 +16,10 @@ public:
     mysqlx::Schema database;
 
     Menu(mysqlx::Schema database);
+
     std::vector<std::tuple<int, std::string, double>> menu_items();
-    // void print_menu(const std::vector<std::tuple<int, std::string, double>>& );
 
     void print_menu();
-
 
 };
 
