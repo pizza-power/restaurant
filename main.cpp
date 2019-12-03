@@ -1,47 +1,54 @@
 #include <iostream>
 #include <tuple>
 
+#include "mysqlx/xdevapi.h"
 #include "customer.h"
 #include "order.h"
 #include "fns.h"
 #include "menu.h"
-#include "mysqlx/xdevapi.h"
 
 int main() {
+
+    // ask if it is carryout or delivery,
+    // todo: this probably doesn't need to be here, could probably go into the order function
     char order_type;
     order_type = intro_routine();
-
-    // no error checking for inputs other than x or y
-    // no error checking for non char inputs
-
     if (order_type == 'X' || (order_type == 'x')) {
         quit_order();
         return 0;
     }
 
-    // create new menu, use print menu
-    Menu new_menu;
+    // todo: open a log file and log what the program is doing
 
-    // add items to the menu, this will be done on initial program boot by querying db
-    new_menu.menu_items.emplace_back(std::make_tuple(1, "pizza", 999));
-    new_menu.menu_items.emplace_back(std::make_tuple(2, "hotdog", 299));
-    new_menu.menu_items.emplace_back(std::make_tuple(3, "soda", 199));
+    // create database connection
+    mysqlx::Session mySession(mysqlx::SessionOption::HOST, "localhost",
+                              mysqlx::SessionOption::PORT, 33060,
+                              mysqlx::SessionOption::USER, "root",
+                              mysqlx::SessionOption::PWD, "");
+    mysqlx::Schema database = mySession.getSchema("restaurant");
+
+    // load menu from the database
+    Menu menu(database);
 
     // create a customer
-    Customer this_customer(customer_creator());
+    Customer customer(customer_creator(database));
 
-    // create an order, get orderNumber from DB?
-    std::string orderNumber = "10021331";
-    Order orderName(order_type, orderNumber, this_customer, new_menu);
+    // create an order
+    Order order(order_type, customer, menu, database);
 
     // add items to order
-    while (orderName.add_items(orderName, new_menu.menu_items)) {
+    while (order.create_order(menu.menu_items())) {
+
     }
 
     // print out the final order
-    orderName.print_order(this_customer);
+    order.print_order(customer);
 
+    // todo: get rid of this, move elsewhere, etc
     quit_order();
+
+    // close the mysqlx session
+    mySession.close();
 
     return 0;
 }

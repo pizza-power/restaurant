@@ -6,17 +6,20 @@
 #include <vector>
 #include <tuple>
 
+#include "mysqlx/xdevapi.h"
+#include "include/mysqlx/xdevapi.h"
+
 class Menu {
 
 public:
 
-    Menu();
+    mysqlx::Schema database;
 
-    std::vector<std::tuple<int, std::string, int>> menu_items;
+    Menu(mysqlx::Schema database);
 
-    void print_menu(const std::vector<std::tuple<int, std::string, int>>& );
+    std::vector<std::tuple<int, std::string, double>> menu_items();
 
-    std::vector<std::tuple<int, std::string, int>> add_item(std::tuple<int, std::string, int>);
+    void print_menu();
 
 };
 
