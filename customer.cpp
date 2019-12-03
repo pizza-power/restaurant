@@ -32,6 +32,7 @@ Customer customer_creator() {
     std::string street_address;
     std::string city;
     std::string state;
+    std::string zip;
 
     std::cout << "\nPlease enter your first and last name.\n" << std::endl;
     std::cout << "First Name: ";
@@ -40,16 +41,19 @@ Customer customer_creator() {
     std::cin >> last_name;
     std::cout << std::endl;
 
-    std::cout << "\nPlease enter your street address: ";
+    std::cout << "Please enter your street address: ";
     std::cin.ignore();
     getline(std::cin, street_address);
 
-    std::cout << "\nPlease enter you city: ";
-
+    std::cout << "\nPlease enter your city: ";
     getline(std::cin, city);
 
-    std::cout << "\nPlease enter your state in two letter abbreviation form, please: ";
+    std::cout << "\nPlease enter your state in two letter abbreviation form: ";
     std::cin >> state;
+
+    std::cout << "\nPlease enter your zip code: ";
+    std::cin >> zip;
+
     std::cout << "\n" << std::endl;
 
     // create a customer object
