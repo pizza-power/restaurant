@@ -15,9 +15,9 @@ class Customer {
 
 public:
     //constructor
-    Customer(std::string phone_number, std::string new_first_name, std::string new_last_name, std::string new_street_address,
-             std::string new_city, std::string new_state, int zip_code, std::string username, std::string password,
-             mysqlx::Schema database);
+    Customer(int customer_id, std::string phone_number, std::string new_first_name, std::string new_last_name,
+            std::string new_street_address, std::string new_city, std::string new_state, std::string zip_code,
+            std::string username, std::string password, mysqlx::Schema database);
 
     static void print_customer();
     static void change_customer_info();
@@ -31,7 +31,7 @@ public:
     std::string street_address = "";
     std::string city = "";
     std::string state = "";
-    int zip_code = 0;
+    std::string zip_code = "";
 
 private:
     std::string username = first_name + last_name;

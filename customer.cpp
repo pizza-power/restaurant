@@ -1,17 +1,17 @@
 #include <iostream>
-#include <vector>
-#include <tuple>
 #include <string>
+#include <ctime>
+#include <chrono>
+#include <fstream>
 
 #include "customer.h"
-#include "fns.h"
 
 // customer class and member functions
 
-Customer::Customer(std::string new_phone_number, std::string new_first_name, std::string new_last_name, std::string new_street_address,
-                   std::string new_city, std::string new_state, int new_zip_code, std::string new_username,
+Customer::Customer(int new_customer_id, std::string new_phone_number, std::string new_first_name, std::string new_last_name, std::string new_street_address,
+                   std::string new_city, std::string new_state, std::string new_zip_code, std::string new_username,
                    std::string new_password, mysqlx::Schema new_database)
-        : phone_number(new_phone_number), first_name(new_first_name), last_name(new_last_name), street_address(new_street_address),
+        : customer_id(new_customer_id), phone_number(new_phone_number), first_name(new_first_name), last_name(new_last_name), street_address(new_street_address),
           city(new_city), state(new_state), zip_code(new_zip_code), username(new_username), password(new_password),
           database(new_database) {}
 
@@ -20,15 +20,18 @@ Customer customer_creator(mysqlx::Schema& database) {
 
     // this creates a customer entry in the mysql database and returns that customer's data
 
-    std::cout << "\n Please enter a phone number: ";
+    std::cout << "\nPlease enter a phone number: ";
     std::string phone_number;
     std::cin >> phone_number;
     std::cout << "\nlooking up phone number...\n" << std::endl;
 
     // if the customer already exists, we don't add it to the database
+
+    mysqlx::Table customers = database.getTable("customers");
+
+
     if (customer_lookup(phone_number, database)) {
 
-        mysqlx::Table customers = database.getTable("customers");
         mysqlx::Row row;
         mysqlx::RowResult customer_row = customers.select("customer_id", "phone_number", "first_name", "last_name",
                                                           "street_address", "city", "state", "zip_code").
@@ -36,22 +39,25 @@ Customer customer_creator(mysqlx::Schema& database) {
 
         row = customer_row.fetchOne();
 
+        std::cout << "Phone Number: " << row[1] << std::endl;
         std::cout << "Customer ID: " << row[0] << std::endl;
         std::cout << "First Name: " << row[2] << std::endl;
         std::cout << "Last Name: " << row[3] << std::endl;
         std::cout << "Street Address: " << row[4] << std::endl;
         std::cout << "City: " << row[5] << std::endl;
         std::cout << "State: " << row[6] << std::endl;
-        std::cout << "Zip: " << row[7] << std::endl;
-        std::cout << "\n" << std::endl;
+        std::cout << "Zip: " << row[7] << "\n" << std::endl;
 
-        // todo: figure out how to properly get zip from the db and then use it to make the customer object
+        // TODO: verify if this is actually the customer
+        // TODO: look for variations of the phone number, or sanitize input to (xxx)-xxx-xxxx?
+
+        int customer_id = int(row[0]);
+
         Customer customer
-                (phone_number, mysqlx::string(row[2]), mysqlx::string(row[3]), mysqlx::string(row[4]),
-                 mysqlx::string(row[5]), mysqlx::string(row[6]), 66666, "", "", database);
+                (customer_id, phone_number, mysqlx::string(row[2]), mysqlx::string(row[3]), mysqlx::string(row[4]),
+                 mysqlx::string(row[5]), mysqlx::string(row[6]), mysqlx::string(row[7]), "", "", database);
 
         return customer;
-
 
     } else {
 
@@ -60,9 +66,11 @@ Customer customer_creator(mysqlx::Schema& database) {
         std::string street_address;
         std::string city;
         std::string state;
-        int zip_code;
-        std::string username = "";
-        std::string password = "";
+        std::string zip_code;
+        std::string username;
+        std::string password;
+
+        // TODO: enter zip first and have it look up city and state in a db
 
         std::cout << "\n" << std::endl;
         std::cout << "\nPlease enter your first and last name.\n" << std::endl;
@@ -83,28 +91,46 @@ Customer customer_creator(mysqlx::Schema& database) {
         std::cin >> state;
 
         std::cout << "\nPlease enter your zip code: ";
-        // need input sanitization for non ints
         std::cin >> zip_code;
 
-        // add customer to the sql table
-        mysqlx::Table customers = database.getTable("customers");
+        // add customer to the sql table by getting last customer and incrementing customer_id by 1
+        // TODO: crashes if no customers are present in the db
+        // TODO: increase performance by getting only one column, or getting only last row, etc
+        mysqlx::Row id_row;
+        mysqlx::RowResult customer_id_row = customers.select("customer_id").orderBy("customer_id DESC").execute();
+        id_row = customer_id_row.fetchOne();
+        int customer_id = id_row[0];
+        customer_id += 1;
 
-        // todo: figure out methods for obtaining customer_id and datetime
+        // create join date and time
+        // TODO: put this in it's own file
+        auto timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+        // add the new customer to the customers table
         mysqlx::TableInsert(customers)
-                .values(0, 787 , phone_number, first_name, last_name, street_address, city, state, zip_code, username,
-                        password, "2009-11-11 23:43:21").execute();
+                .values(0, customer_id , phone_number, first_name, last_name,
+                        street_address, city, state, zip_code, username,
+                        password, ctime(&timenow)).execute();
+
+        // Log customer creation and addition to customers table
+        std::ofstream log ("log.log", std::ios::out | std::ios::app);
+        if (log.is_open()) {
+            log << ctime(&timenow) << "customer created and added to customer table" << std::endl;
+            log.close();
+        }
 
         // create a customer object
         Customer customer
-                (phone_number, first_name, last_name, street_address, city, state,
+                (customer_id, phone_number, first_name, last_name, street_address, city, state,
                         zip_code, username, password, database);
+
 
         return customer;
     }
 }
 
 bool customer_lookup(std::string& phone_number, mysqlx::Schema& database) {
-    // uses phone_number and database table customers to test if customer is already in the sytem
+    // uses phone_number and table restaurant.customers to see if customer is already in the system
     mysqlx::Table customers = database.getTable("customers");
     mysqlx::RowResult customer_row = customers.select("customer_id", "phone_number", "first_name", "last_name",
                                                       "street_address", "city", "state", "zip_code").
@@ -113,7 +139,6 @@ bool customer_lookup(std::string& phone_number, mysqlx::Schema& database) {
     if (customer_row.count() > 0) {
         mysqlx::Row row;
         row = customer_row.fetchOne();
-        std::cout << "customer id = " << row[0] << " phone number " << row[1] << std::endl;
         return true;
     } else {
         std::cout << "Customer not found! " << std::endl;
@@ -121,7 +146,7 @@ bool customer_lookup(std::string& phone_number, mysqlx::Schema& database) {
     }
 }
 
-// todo: implement
+// TODO: implement
 void Customer::print_customer() {
     // select what field to search or enter email or something? email may be best bet because it wouldn't change?
 }

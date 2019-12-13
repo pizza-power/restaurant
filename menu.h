@@ -6,7 +6,6 @@
 #include <vector>
 #include <tuple>
 
-#include "mysqlx/xdevapi.h"
 #include "include/mysqlx/xdevapi.h"
 
 class Menu {
