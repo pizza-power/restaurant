@@ -7,7 +7,6 @@
 #include <tuple>
 
 void quit_order();
-char intro_routine();
+bool intro_routine();
 
 #endif
-

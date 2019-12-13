@@ -1,39 +1,41 @@
 #include <iostream>
 #include <vector>
 #include <tuple>
-#include <algorithm>
 #include <iomanip>
 #include <string>
 #include <ctime>        // std::time_t, struct std::tm, std::localtime
-#include <chrono>       // std::chrono::system_clock
+#include <chrono>        // std::chrono::system_clock
 
 #include "order.h"
 #include "fns.h"
 #include "menu.h"
-#include "mysqlx/xdevapi.h"
+#include "include/mysqlx/xdevapi.h"
+
 
 // Order Constructor
 
-Order::Order(char new_order_type, Customer new_customer, Menu new_menu, mysqlx::Schema new_database)
-        :order_type(new_order_type), customer(new_customer), menu(new_menu),
-        database(new_database) {}
+Order::Order(Customer new_customer, Menu new_menu, mysqlx::Schema new_database)
+        :customer(new_customer), menu(new_menu), database(new_database) {}
 
 bool Order::create_order(std::vector<std::tuple<int, std::string, double>> menu) {
 
-    // get the previous order id in order to increment it by 1 later to make a new order id
-    mysqlx::Table orders = this->database.getTable("orders");
-    mysqlx::RowResult max_order_id_getter =  orders.select("id").orderBy("id DESC").execute();
-    mysqlx::Row row;
+    /*** this function returns a bool depending on if the order creation process is complete,
+         the menu is stored as a vector of tuples and is passed as an argument
 
-    // todo: bug here, will crash if db has zero orders in it
-    row = max_order_id_getter.fetchOne();
-    int prev_max_order_id = row[0];
-    if (order_type == 'X' || (order_type == 'x')) {
-        quit_order();
-        return false;
-    }
+     ***/
 
-    std::cout << "Please, choose from the following options.\n" << std::endl;
+     // TODO: input sanitization/validation, incorrect types and lengths
+     // TODO: put this back in fns function? change intro function back to char?, don't really like that
+     // TODO: change restaurant orders table order_type column to varchar
+
+     if ((order_type != "C") & (order_type != "D")) {
+         std::cout << "\nWill this be for Carryout 'C' or Delivery 'D'? ";
+         std::string order_type;
+         std::cin >> order_type;
+         this->order_type = toupper(order_type[0]);
+     }
+
+    std::cout << "\nPlease, choose from the following options.\n" << std::endl;
     std::cout << "1) Add items to your order.\n2) Remove an item from order.\n3) Cancel order.\n4) Complete order.\n"
     << std::endl;
     std::cout << "Your choice: ";
@@ -50,7 +52,8 @@ bool Order::create_order(std::vector<std::tuple<int, std::string, double>> menu)
         // update total cost of the order
         this->total_cost = this->total_cost + std::get<2>(menu[item_number -1]);
 
-        while ((item_number <= menu.size()) && item_number > 0 ) {
+        // add items to the order
+        while ((item_number <= int(menu.size())) && item_number > 0 ) {
             this->order_items.push_back(menu[item_number - 1]);
             std::cout << "\n" << std::get<1>(menu[item_number-1]) << " has been added successfully!\n" << std::endl;
             std::cout << "Please make another choice, or press 0 to exit: ";
@@ -58,15 +61,10 @@ bool Order::create_order(std::vector<std::tuple<int, std::string, double>> menu)
 
             //update cost
             this->total_cost = this->total_cost + std::get<2>(menu[item_number -1]);
-
-            // if you press 0 it goes back to the start of this fucntion so that is undeeded probably
-            // could this be done recursively
-
         }
         return true;
     } else if (pressed_key == 2) {
-
-        // if order empty return tru
+        // if order empty return true
         if (order_items.empty()) {
             std::cout << "No items to remove!\n" << std::endl;
             return true;
@@ -86,34 +84,55 @@ bool Order::create_order(std::vector<std::tuple<int, std::string, double>> menu)
         return true;
 
     } else if (pressed_key == 3) {
-        // if the order is quit, then the row int he table should be deleted, or else you could automate an
-        // endless order loop where you add items and the quit and this would DOS app
+        order_items.clear();
+        if (order_items.empty()) {
+            std::cout << "\nYour order has been cancelled!\n" << std::endl;
+        }
+        // reset cost to $0.00
+        total_cost = 0.00;
         quit_order();
         return false;
     } else if (pressed_key == 4) {
-        // so we need to go back and update the customer id in the db
 
-        // can skip this if customer id is modifed up front then just use customer.id here
-        std::cout << customer.phone_number << std::endl;
+        // get the previous order id in order to increment it by 1 later to make a new order id
+        mysqlx::Table orders = database.getTable("orders");
+        mysqlx::RowResult max_order_id_getter =  orders.select("id").orderBy("id DESC").execute();
+        mysqlx::Row row;
 
+        // if no order items, cost needs to be set to 0
+        if (sizeof(order_items) == 0 ) {
+            this->total_cost = 0.00;
+        }
+
+        // TODO: bug here, will crash if db has zero orders in it
+        row = max_order_id_getter.fetchOne();
+        int prev_max_order_id = row[0];
+        int order_id = prev_max_order_id + 1;
+
+        // get time to use as the order time in the database
         auto timenow =
                 std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         std::cout << ctime(&timenow) << std::endl;
-        
+
         // add order to the restaurant db
-        mysqlx::TableInsert(orders).values(0, prev_max_order_id + 1, customer.customer_id, ctime(&timenow), this->total_cost,
-                                           this->order_type).execute();
+        mysqlx::TableInsert(orders).values(0, order_id, customer.customer_id, ctime(&timenow),
+                this->total_cost, order_type).execute();
+
+        // add order items to the order items table
+        mysqlx::Table order_items_table = database.getTable("order_items");
+        for (auto item : order_items) {
+            mysqlx::TableInsert(order_items_table).values(0, order_id , std::get<1>(item), std::get<0>(item), 1).execute();
+        }
         return false;
     }
-
     return true;
 }
 
 void Order::print_order(Customer& customer) {
     std::cout << std::setfill ('x') << std::setw (80) << "\n" << std::endl;
 
-    // get order id instead of 89876
-    std::cout << "\nOrder Number: " << 89876 << "\nC/O or Delivery: " << order_type
+    // TODO: get order id instead of 89876
+    std::cout << "\nOrder Number: " <<  89876 << "\nC/O or Delivery: " << order_type
               << "\nCustomer Name: " << customer.first_name + " " + customer.last_name <<"\n\nCustomer Address: " <<
               customer.street_address + " " + customer.city + ", " + customer.state <<  "\n" << std::endl;
 
@@ -132,12 +151,14 @@ void Order::print_order(Customer& customer) {
         }
 
     }
-    // food and drink tax rate 0.02
-    std::cout << "Total Cost: " << this->total_cost * 1.02 << std::endl;
+    // TODO: precision on cost output
+    double FOOD_AND_DRINK_TAXRATE = 1.02;           // 2% food and drink tax rate
+    std::cout << "\nTotal Cost: " << this->total_cost * FOOD_AND_DRINK_TAXRATE << std::endl;
     std::cout << "\n" << std::endl;
 }
 
-// to be implemented;
+// TODO: implement
+//int Order::order_id_getter() {}
 void Order::cancel_order() {}
 void Order::modify_order() {}
 void Order::submit_order() {}

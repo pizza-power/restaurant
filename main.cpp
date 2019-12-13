@@ -1,54 +1,59 @@
 #include <iostream>
 #include <tuple>
+#include <fstream>
 
-#include "mysqlx/xdevapi.h"
 #include "customer.h"
 #include "order.h"
 #include "fns.h"
 #include "menu.h"
 
+// TODO: overall todos; store monetary values as long doubles? will need to update menu functions, inventory, orders
+// TODO: all inputs need validation/sanitization
+
 int main() {
 
-    // ask if it is carryout or delivery,
-    // todo: this probably doesn't need to be here, could probably go into the order function
-    char order_type;
-    order_type = intro_routine();
-    if (order_type == 'X' || (order_type == 'x')) {
+    // TODO: open a log file and log what the program is doing
+    std::ofstream log ("log.log", std::ios::out | std::ios::app);
+    if (log.is_open()) {
+        log << "program initialized" << std::endl;
+        log.close();
+    }
+
+    if (intro_routine()) {
+
+        // create database connection
+        // TODO: put in it's own class?
+            mysqlx::Session mySession(mysqlx::SessionOption::HOST, "localhost",
+                                      mysqlx::SessionOption::PORT, 33060,
+                                      mysqlx::SessionOption::USER, "root",
+                                      mysqlx::SessionOption::PWD, "");
+
+
+        mysqlx::Schema database = mySession.getSchema("restaurant");
+
+        // load menu from the database
+        Menu menu(database);
+
+        // create a customer
+        Customer customer(customer_creator(database));
+
+        // create an order
+        Order order(customer, menu, database);
+
+        // add items to order
+        while (order.create_order(menu.menu_items())) {}
+
+        // print out the final order
+        // TODO: should print order go by order_id instead? probably want it to be sep function not depending on cust?
+        order.print_order(customer);
+
         quit_order();
-        return 0;
+
+        // close the mysqlx session
+        mySession.close();
+
+    } else {
+        quit_order();
     }
-
-    // todo: open a log file and log what the program is doing
-
-    // create database connection
-    mysqlx::Session mySession(mysqlx::SessionOption::HOST, "localhost",
-                              mysqlx::SessionOption::PORT, 33060,
-                              mysqlx::SessionOption::USER, "root",
-                              mysqlx::SessionOption::PWD, "");
-    mysqlx::Schema database = mySession.getSchema("restaurant");
-
-    // load menu from the database
-    Menu menu(database);
-
-    // create a customer
-    Customer customer(customer_creator(database));
-
-    // create an order
-    Order order(order_type, customer, menu, database);
-
-    // add items to order
-    while (order.create_order(menu.menu_items())) {
-
-    }
-
-    // print out the final order
-    order.print_order(customer);
-
-    // todo: get rid of this, move elsewhere, etc
-    quit_order();
-
-    // close the mysqlx session
-    mySession.close();
-
     return 0;
 }
